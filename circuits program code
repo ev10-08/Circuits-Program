@@ -65,8 +65,8 @@ void getCircuitType (int& circuitType) { //asks the user whether the circuit is 
 void getSetupData (int& numResistors, double& sourceVoltage) { //gathers the number of resistors and the source voltage from the user
     cout << "\nHow many resistors are in the circuit?\n";
     cin >> numResistors;
-    while (!cin or numResistors < 1) { //invalid input/fail check for the number of resistors
-        cout << "Invalid input, please enter a whole number that is 1 or greater.\n";
+    while (!cin or numResistors < 2) { //invalid input/fail check for the number of resistors
+        cout << "Invalid input, please enter a whole number that is 2 or greater.\n";
         cin.clear();
         cin.ignore(10000, '\n');
         cin >> numResistors;
