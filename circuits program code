@@ -1,0 +1,199 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+//declaring all of the functions being used throughout the program
+void getCircuitType (int& circuitType); //first bit of user input, asks whether the circuit is series or parallel
+void getSetupData (int& numResistors, double& sourceVoltage); //gathers number of resistors and source voltage from the user
+void getResistorData (int& numResistors, vector<double>& resistors); //reads each individual resistance value from the user
+void calculateSeries (vector<double>& resistors, double& totalSeries); //calculates the total resistance for a series circuit
+void calculateParallel (vector<double>& resistors, double& totalParallel); //calculates the total resistance for a parallel circuit
+void displaySeries (vector<double>& resistors, double& sourceVoltage, double& totalSeries); //displays the series total and voltage drop at each resistor
+void displayParallel (vector<double>& resistors, double& sourceVoltage, double& totalParallel); //displays the parallel total and current at each resistor
+void programCheck (int& programCompletion); //checks if the user wants to stop using the program, last bit of user input unless the user decides to continue
+
+int main()
+{
+    int circuitType, numResistors, programCompletion = 0;
+    double sourceVoltage, totalSeries, totalParallel;
+
+    //an intro explaining to users the use of the program and a simple explanation of the process
+    cout << "----------------------------------" << endl;
+    cout << "|   This program will calculate  |" << endl;
+    cout << "|   total resistance and either  |" << endl;
+    cout << "|   the voltage drop at each     |" << endl;
+    cout << "|   resistor (for a series       |" << endl;
+    cout << "|   circuit) or the current at   |" << endl;
+    cout << "|   each resistor (for a         |" << endl;
+    cout << "|   parallel circuit), based on  |" << endl;
+    cout << "|   the circuit type the user    |" << endl;
+    cout << "|   chooses.                     |" << endl;
+    cout << "----------------------------------\n" << endl;
+
+    while (programCompletion != 2) { //loops as long as the program completion value isn't equal to 2
+        vector<double> resistors; //stores each resistance value the user enters for this run
+        getCircuitType (circuitType); //uses user input to determine whether to run series or parallel calculations
+        getSetupData (numResistors, sourceVoltage); //uses user input to determine how many resistors and the source voltage
+        getResistorData (numResistors, resistors); //uses user input to store every resistance value into the vector
+
+        if (circuitType == 1) { //series circuit was chosen
+            calculateSeries (resistors, totalSeries);
+            displaySeries (resistors, sourceVoltage, totalSeries);
+        } else { //parallel circuit was chosen
+            calculateParallel (resistors, totalParallel);
+            displayParallel (resistors, sourceVoltage, totalParallel);
+        }
+
+        programCheck (programCompletion); //check if user wants to proceed with using the program again
+    }
+
+    return 0;
+}
+
+void getCircuitType (int& circuitType) { //asks the user whether the circuit is series or parallel
+    cout << "Is the circuit Series or Parallel?\n\n1 - Series\n2 - Parallel\n";
+    cin >> circuitType;
+    while (!cin or circuitType > 2 or circuitType < 1) { //invalid input/fail check for the circuit type
+        cout << "Invalid input, please choose the circuit type.\n\n1 - Series\n2 - Parallel\n";
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cin >> circuitType;
+    }
+}
+
+void getSetupData (int& numResistors, double& sourceVoltage) { //gathers the number of resistors and the source voltage from the user
+    cout << "\nHow many resistors are in the circuit?\n";
+    cin >> numResistors;
+    while (!cin or numResistors < 1) { //invalid input/fail check for the number of resistors
+        cout << "Invalid input, please enter a whole number that is 1 or greater.\n";
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cin >> numResistors;
+    }
+
+    cout << "What is the source voltage (in volts)?\n";
+    cin >> sourceVoltage;
+    while (!cin or sourceVoltage <= 0) { //invalid input/fail check for the source voltage
+        cout << "Invalid input, please enter a source voltage greater than 0.\n";
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cin >> sourceVoltage;
+    }
+}
+
+void getResistorData (int& numResistors, vector<double>& resistors) { //reads each resistance value from the user and stores it into the vector
+    double resistance;
+    int counter = 1;
+
+    cout << "\nEnter each resistance value (in ohms).\n";
+
+    while (counter <= numResistors) { //loops once for every resistor the user said was in the circuit
+        cout << "Enter the resistance of resistor #" << counter << ": ";
+        cin >> resistance;
+        while (!cin or resistance <= 0) { //invalid input/fail check for the resistance value
+            cout << "Invalid input, please enter a resistance greater than 0 for resistor #" << counter << ": ";
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cin >> resistance;
+        }
+        resistors.push_back(resistance); //store the valid resistance value into the vector
+        counter = counter + 1;
+    }
+}
+
+void calculateSeries (vector<double>& resistors, double& totalSeries) { //calculates the series total by adding every stored resistance together
+    double seriesSum = 0.0;
+    int counter = 0;
+
+    while (counter < resistors.size()) { //walks through every stored resistance one time
+        seriesSum = seriesSum + resistors[counter];
+        counter = counter + 1;
+    }
+
+    totalSeries = seriesSum; //total resistance in series is just the sum of each resistance
+}
+
+void calculateParallel (vector<double>& resistors, double& totalParallel) { //calculates the parallel total using the reciprocal-of-the-sum-of-reciprocals formula
+    double reciprocalSum = 0.0;
+    int counter = 0;
+
+    while (counter < resistors.size()) { //walks through every stored resistance one time
+        reciprocalSum = reciprocalSum + (1.0 / resistors[counter]);
+        counter = counter + 1;
+    }
+
+    totalParallel = 1.0 / reciprocalSum; //total resistance in parallel is the reciprocal of the sum of the reciprocals
+}
+
+void displaySeries (vector<double>& resistors, double& sourceVoltage, double& totalSeries) { //prints the series total and the voltage drop at each resistor
+    double seriesCurrent = sourceVoltage / totalSeries; //in a series circuit the current is the same at every resistor
+    double voltageDrop;
+    int counter = 0;
+
+    cout << "\n-------------------------------------" << endl;
+    cout << "|      SERIES CIRCUIT RESULTS       |" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "| Total resistance : " << totalSeries << " ohms" << endl;
+    cout << "| Circuit current  : " << seriesCurrent << " A" << endl;
+    cout << "-------------------------------------" << endl;
+
+    cout << "\n---------------------------------------------" << endl;
+    cout << "| Resistor | Resistance | Voltage Drop (V) |" << endl;
+    cout << "---------------------------------------------" << endl;
+
+    while (counter < resistors.size()) { //walks through every stored resistance to show its voltage drop
+        voltageDrop = resistors[counter] * seriesCurrent; //V = I * R using the shared series current
+
+        cout << "|   #" << (counter + 1)
+             << "     |  " << resistors[counter] << " ohms"
+             << "  |      " << voltageDrop << " V" << endl;
+
+        counter = counter + 1;
+    }
+
+    cout << "---------------------------------------------\n" << endl;
+}
+
+void displayParallel (vector<double>& resistors, double& sourceVoltage, double& totalParallel) { //prints the parallel total and the current at each resistor
+    double resistorCurrent;
+    int counter = 0;
+
+    cout << "\n-------------------------------------" << endl;
+    cout << "|     PARALLEL CIRCUIT RESULTS      |" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "| Total resistance : " << totalParallel << " ohms" << endl;
+    cout << "| Source voltage   : " << sourceVoltage << " V" << endl;
+    cout << "-------------------------------------" << endl;
+
+    cout << "\n-------------------------------------------" << endl;
+    cout << "| Resistor | Resistance | Current (Amps) |" << endl;
+    cout << "-------------------------------------------" << endl;
+
+    while (counter < resistors.size()) { //walks through every stored resistance to show its branch current
+        resistorCurrent = sourceVoltage / resistors[counter]; //in a parallel circuit each branch sees the full source voltage
+
+        cout << "|   #" << (counter + 1)
+             << "     |  " << resistors[counter] << " ohms"
+             << "  |    " << resistorCurrent << " A" << endl;
+
+        counter = counter + 1;
+    }
+
+    cout << "-------------------------------------------\n" << endl;
+}
+
+void programCheck (int& programCompletion) { //checks if the user would like to run the program again or not, ends the program if they don't
+    cout << "\nDo you want to use the program again?\n\n1 - Yes\n2 - No\n";
+    cin >> programCompletion;
+    while (!programCompletion or programCompletion > 2 or programCompletion < 1) {
+        cout << "Invalid Input. Would you like to use the program again?\n\n1 - Yes\n2 - No\n";
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cin >> programCompletion;
+    }
+    if (programCompletion == 1) {
+        cout << "\n----------------------------------------------------------------------------------------------------------\n" << endl;
+    }
+}
+
